@@ -5,105 +5,71 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MCP Admin Configuration</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <!-- Admin specific styles can be added later or in a separate CSS file -->
     <style>
-        /* Basic styles for admin page elements */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f9f9f9;
-            color: #333;
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f9f9f9; color: #333; }
+        .container { width: 80%; margin: auto; background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1, h2 { color: #333; text-align: center; }
+        .error-message { color: red; text-align: center; margin-bottom: 15px; }
+        .success-message { color: green; text-align: center; margin-bottom: 15px; background-color: #e6ffe6; padding: 10px; border: 1px solid #b3ffb3; border-radius: 4px;}
+        section { margin-bottom: 30px; }
+        form { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #fefefe; }
+        form div { margin-bottom: 10px; }
+        form label { display: block; margin-bottom: 5px; font-weight: bold; }
+        form input[type="text"], form input[type="number"], form input[type="password"], form select { width: calc(100% - 22px); padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        form button[type="submit"] { padding: 10px 15px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        form button[type="submit"]:hover { background-color: #218838; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        table th, table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        table th { background-color: #f0f0f0; }
+        .actions-cell button, .actions-cell a button {
+            padding: 5px 10px; margin-right: 5px; cursor: pointer; border-radius: 3px; font-size: 0.9em;
         }
-        .container {
-            width: 80%;
-            margin: auto;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        h1, h2 {
-            color: #333;
-            text-align: center;
-        }
-        .error-message {
-            color: red;
-            text-align: center;
-            margin-bottom: 15px;
-        }
-        form {
-            margin-bottom: 30px;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            background-color: #fefefe;
-        }
-        form label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-        form input[type="text"],
-        form input[type="number"] {
-            width: calc(100% - 22px);
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        form button {
-            padding: 10px 20px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        form button:hover {
-            background-color: #218838;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        table th, table td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: left;
-        }
-        table th {
-            background-color: #f0f0f0;
-        }
-        table td button {
-            padding: 5px 10px;
-            margin-right: 5px;
-            cursor: pointer;
-            border: none;
-            border-radius: 3px;
-        }
-        .edit-btn {
-            background-color: #ffc107;
-            color: #333;
-        }
-        .delete-btn {
-            background-color: #dc3545;
-            color: white;
-        }
-        .no-servers {
-            text-align: center;
-            padding: 10px;
-            color: #777;
-        }
+        .edit-btn { background-color: #ffc107; color: #333; border: none; text-decoration: none; }
+        .delete-btn { background-color: #dc3545; color: white; border: none; }
+        .no-servers { text-align: center; padding: 10px; color: #777; }
+        .action-form { display: inline-block; margin: 0; padding: 0; }
+        .api-key-status { font-style: italic; color: #555; }
+        .security-warning { color: #c00; font-size: 0.9em; margin-top: 5px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>MCP Admin Configuration</h1>
+        <h1>MCP Server & LLM Configuration</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <p class="{{ category }}-message">{{ message }}</p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
         {% if error %}
             <p class="error-message">{{ error }}</p>
         {% endif %}
+
+        <section id="openai-config">
+            <h2>OpenAI Configuration</h2>
+            <form method="POST" action="{{ url_for('save_api_key') }}">
+                <div>
+                    <label for="openai-api-key">OpenAI API Key:</label>
+                    <input type="password" id="openai-api-key" name="openai-api-key" style="width: calc(80% - 22px);">
+                    <button type="submit" style="width: 18%;">Save API Key</button>
+                </div>
+                 <p class="api-key-status">
+                    Current status:
+                    {% if openai_api_key_set %}
+                        API Key is set (e.g., {{ openai_api_key_display }}...).
+                    {% else %}
+                        API Key is NOT set.
+                    {% endif %}
+                </p>
+                <p class="security-warning">
+                    <strong>Warning:</strong> Storing API keys this way is not secure for production environments.
+                    This is for local development/testing only. Use environment variables or a secure vault in production.
+                </p>
+            </form>
+        </section>
 
         <section id="add-server-form">
             <h2>Add New MCP Server</h2>
@@ -118,14 +84,18 @@
                 </div>
                 <div>
                     <label for="server-port">Server Port:</label>
-                    <input type="number" id="server-port" name="server-port" required>
+                    <input type="number" id="server-port" name="server-port" min="1" max="65535" required>
+                </div>
+                <div>
+                    <label for="server-type">Server Type:</label>
+                    <input type="text" id="server-type" name="server-type" placeholder="e.g., Minecraft Java, Bedrock">
                 </div>
                 <button type="submit">Add Server</button>
             </form>
         </section>
 
         <section id="existing-servers">
-            <h2>Existing Servers</h2>
+            <h2>Existing MCP Servers</h2>
             {% if servers %}
             <table>
                 <thead>
@@ -133,6 +103,7 @@
                         <th>Server Name</th>
                         <th>Host</th>
                         <th>Port</th>
+                        <th>Type</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -142,16 +113,21 @@
                         <td>{{ server.name }}</td>
                         <td>{{ server.host }}</td>
                         <td>{{ server.port }}</td>
-                        <td>
-                            <button class="edit-btn">Edit</button>
-                            <button class="delete-btn">Delete</button>
+                        <td>{{ server.type | default('N/A') }}</td>
+                        <td class="actions-cell">
+                            <a href="{{ url_for('edit_server', server_id=loop.index0) }}">
+                                <button class="edit-btn">Edit</button>
+                            </a>
+                            <form class="action-form" action="{{ url_for('delete_server', server_id=loop.index0) }}" method="post">
+                                <button type="submit" class="delete-btn" onclick="return confirm('Are you sure you want to delete server \'{{ server.name }}\'?');">Delete</button>
+                            </form>
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
             {% else %}
-            <p class="no-servers">No servers configured yet.</p>
+            <p class="no-servers">No servers configured yet. Defaults will be loaded on next app start if list remains empty.</p>
             {% endif %}
         </section>
     </div>
