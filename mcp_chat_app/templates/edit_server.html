@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit MCP Server Configuration</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Reusing admin styles, could be refactored into a common CSS -->
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f9f9f9; color: #333; }
+        .container { width: 60%; margin: auto; background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; text-align: center; }
+        .error-message { color: red; text-align: center; margin-bottom: 15px; }
+        form div { margin-bottom: 10px; }
+        form label { display: block; margin-bottom: 5px; font-weight: bold; }
+        form input[type="text"], form input[type="number"], form select { width: calc(100% - 22px); padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        form button[type="submit"] { padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        form button[type="submit"]:hover { background-color: #0056b3; }
+        .nav-links { margin-top: 20px; text-align: center; }
+        .nav-links a { color: #007bff; text-decoration: none; }
+        .nav-links a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Edit Server Configuration</h1>
+
+        {% if error %}
+            <p class="error-message">{{ error }}</p>
+        {% endif %}
+
+        {% if server %}
+        <form method="POST" action="{{ url_for('edit_server', server_id=server_id) }}">
+            <div>
+                <label for="server-name">Server Name:</label>
+                <input type="text" id="server-name" name="server-name" value="{{ server.name }}" required>
+            </div>
+            <div>
+                <label for="server-host">Server Host/IP:</label>
+                <input type="text" id="server-host" name="server-host" value="{{ server.host }}" required>
+            </div>
+            <div>
+                <label for="server-port">Server Port:</label>
+                <input type="number" id="server-port" name="server-port" value="{{ server.port }}" min="1" max="65535" required>
+            </div>
+            <div>
+                <label for="server-type">Server Type:</label>
+                <input type="text" id="server-type" name="server-type" value="{{ server.type | default('') }}" placeholder="e.g., Minecraft Java, Bedrock">
+            </div>
+            <button type="submit">Save Changes</button>
+        </form>
+        {% else %}
+        <p class="error-message">Server data not found. It might have been deleted.</p>
+        {% endif %}
+
+        <div class="nav-links">
+            <a href="{{ url_for('admin') }}">Back to Admin Page</a>
+        </div>
+    </div>
+</body>
+</html>

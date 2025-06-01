@@ -3,14 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MCP Chat</title>
+    <title>MCP Chat with LLM</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Additional styles for server select */
+        #server-select-area {
+            margin-bottom: 10px;
+            padding: 0 10px; /* Match input-area padding */
+            display: flex;
+            align-items: center;
+        }
+        #server-select-area label {
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        #mcp-server-select {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: white;
+        }
+    </style>
 </head>
 <body>
     <div id="chat-container">
-        <h1>MCP Chat Room</h1>
+        <h1>MCP Chat with LLM</h1>
         <div id="chat-box">
             <!-- Chat messages will appear here -->
+            <p><strong>System:</strong> Welcome! Select a server to get specific info, or chat generally. Please ensure your OpenAI API key is set in the <a href="{{ url_for('admin') }}" target="_blank">Admin Panel</a>.</p>
+        </div>
+        <div id="server-select-area">
+            <label for="mcp-server-select">Context:</label>
+            <select id="mcp-server-select">
+                <option value="">Chat with LLM (General)</option>
+                {% if servers %}
+                    {% for server in servers %}
+                    <option value="{{ loop.index0 }}">{{ server.name }} ({{ server.host }}:{{server.port}})</option>
+                    {% endfor %}
+                {% else %}
+                    <option value="" disabled>No MCP servers configured</option>
+                {% endif %}
+            </select>
         </div>
         <div id="input-area">
             <input type="text" id="message-input" placeholder="Type your message...">
